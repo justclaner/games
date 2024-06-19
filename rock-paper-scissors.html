@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <style>
+        body {
+            text-align: center;
+            padding-top:10%;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+            transform:scale(1.5);
+            overflow:hidden;
+        }
+        button {
+            margin: 4px;
+            width:fit-content;
+            max-width: 150px;
+            height: 30px;
+            background-color: lightgray;
+            border: 0px;
+            border-radius: 4px;
+            padding-left: 10px;
+            padding-right:10px;
+        }
+        button:hover {
+            background-color: rgb(240, 240, 240);
+        }
+
+        button:active {
+            background-color: rgb(230, 230, 230);
+            transform: translateY(1px);
+        }
+
+        #statistics {
+            visibility: hidden;
+        }
+        .result {
+            display:none;
+        }
+
+        .reset {
+            display: none;
+        }
+
+
+    </style>
+</head>
+<body>
+    <h1>Rock Paper Scissors</h1>
+    <p id="statistics">s</p>
+    <p id="prompt">Choose your move:</p>
+    <div class="options" id="options">
+        <button onclick="playGame(0)">Rock</button><button onclick="playGame(1)">Paper</button><button onclick="playGame(2)">Scissors</button>
+    </div>
+    <p class="result" id="result"></p>
+    <div><button id="reset" class="reset" onclick="resetGame()" style=" margin: auto;">Another Round!</button></div>
+
+    <script>
+        var wins = 0;
+        var draws = 0;
+        var losses = 0;
+
+        function playGame(playerMove) {
+            document.getElementById("statistics").style.visibility = "visible";
+            document.getElementById("options").style.display = "none";
+            document.getElementById("prompt").style.display = "none";
+            var result = document.getElementById("result");
+            result.style.display = "block";
+            document.getElementById("reset").style.display = "block";
+
+            var computerMove = Math.floor(Math.random()*3);
+            var text = "";
+
+            switch (computerMove) {
+                case 0:
+                    text += "The computer chose Rock";
+                    break;
+                case 1:
+                    text += "The computer chose Paper";
+                    break;
+                case 2:
+                    text += "The computer chose Scissors";
+                    break;
+            }
+            switch (playerMove) {
+                case 0:
+                    text += " while you chose Rock.";
+                    break;
+                case 1:
+                    text += " while chose Paper.";
+                    break;
+                case 2:
+                    text += " while you chose Scissors.";
+                    break;
+            }
+
+            if (playerMove == computerMove) {text += " It was a draw!"; draws++;} else
+            if (playerMove == computerMove + 1 || playerMove == computerMove - 2) {text += " You won!"; wins++;}
+            else {text += " You lost!"; losses++;}
+            result.innerHTML = text;
+            document.getElementById("statistics").innerHTML = "Wins: " + wins + " Losses: " + losses + " Draws: " + draws;
+        }
+
+        function resetGame() {
+            document.getElementById("options").style.display = "block";
+            document.getElementById("prompt").style.display = "block";
+            document.getElementById("result").style.display = "none";
+            document.getElementById("reset").style.display = "none";
+        }
+    </script>
+</body>
+</html>
