@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            text-align: center;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-drag: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #board {
+            margin: 0 auto;
+            width: 540px;
+            height:540px;
+            border: 1px solid black;
+            display:flex;
+            flex-wrap: wrap;
+        }
+
+        #board div {
+            width: 178px;
+            height: 178px;
+            border: 1px solid black;
+        }
+
+        #options button {
+            padding:5px;
+            margin: 5px;
+        }
+        .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        #board p {
+            font-size: 124px;
+        }
+        
+        #reset {
+            padding: 5px;
+            margin: 5px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic Tac Toe (1P)</h1>
+    <p>Computer Makes Random Moves</p>
+    <div id="options">
+        <button onclick="playerChoice(0)">Choose X</button><button onclick="playerChoice(1)">Choose O</button>
+    </div>
+    <div id="board" style="visibility:hidden"></div>
+    <p id="winner"></p>
+    <p id="statistics" style="visibility: hidden;">s</p>
+    <button id="reset" onclick="resetGame()" >Another Round</button>
+    <script>
+        var turn = 1;
+        var gameEnded = false;
+        var board = [];
+
+        var playerWin = 0;
+        var computerWin = 0;
+        var draws = 0;
+
+        for (let i = 0; i < 9; i++) {board.push(0);}
+        window.onload = function() {
+            createGame();
+        }
+
+        function playerChoice(option) {
+            document.getElementById("options").style.display = "none";
+            document.getElementById("board").style.visibility = "visible";
+            if (option == 0) {turn = 1;} else {
+                turn = 2;
+                var computerNode = document.createElement("p");
+                var computerPosition = generateRandom();
+                document.getElementById(computerPosition.toString()).appendChild(computerNode);
+                computerNode.innerHTML = "X";
+                board[computerPosition] = "x";
+            }
+        }
+
+        function createGame() {
+            for (let i = 0; i < 9; i++) {
+                var tile = document.createElement("div");
+                tile.id = i.toString();
+                document.getElementById("board").appendChild(tile);
+                tile.addEventListener("click",move);
+                tile.classList.add("center");
+            }
+        } 
+        
+        function move() {
+            if (this.childElementCount == 1 || gameEnded == true) {return;}
+            var node = document.createElement("p");
+            this.appendChild(node);
+            var computerPosition = 0;
+            var computerNode = document.createElement("p");
+            if (turn < 9) {
+            computerPosition = generateRandom();
+            while (computerPosition == this.id || document.getElementById(computerPosition.toString()).childElementCount == 1) {computerPosition = generateRandom();}
+            document.getElementById(computerPosition.toString()).appendChild(computerNode);
+            }
+
+            if (turn%2 == 1) {
+            node.innerHTML = "X";
+            board[this.id] = "x";
+            if (turn < 9) {
+            computerNode.innerHTML = "O";
+            board[computerPosition] = "o"
+            }
+            } else {
+            node.innerHTML = "O";
+            board[this.id] = "o";
+            computerNode.innerHTML = "X";
+            board[computerPosition] = "x"
+            }
+
+            turn+=2;
+
+            console.log(turn);
+            console.log(board);
+            checkGame();
+        }
+        
+        function checkGame() {
+            if (    (board[0] == "x" && board[1] == "x" && board[2] == "x")
+                ||  (board[3] == "x" && board[4] == "x" && board[5] == "x")
+                ||  (board[6] == "x" && board[7] == "x" && board[8] == "x")
+                ||  (board[0] == "x" && board[3] == "x" && board[6] == "x")
+                ||  (board[1] == "x" && board[4] == "x" && board[7] == "x")
+                ||  (board[2] == "x" && board[5] == "x" && board[8] == "x")
+                ||  (board[0] == "x" && board[4] == "x" && board[8] == "x")
+                ||  (board[2] == "x" && board[4] == "x" && board[6] == "x")) {
+                    gameEnded = true;
+                    var text = ""
+                    if (turn%2 == 1) {text += "You (X) win!"; playerWin++} else {text += "The Computer (X) wins!"; computerWin++;}
+                    document.getElementById("winner").innerHTML = text;
+                } else
+            if (    (board[0] == "o" && board[1] == "o" && board[2] == "o")
+                ||  (board[3] == "o" && board[4] == "o" && board[5] == "o")
+                ||  (board[6] == "o" && board[7] == "o" && board[8] == "o")
+                ||  (board[0] == "o" && board[3] == "o" && board[6] == "o")
+                ||  (board[1] == "o" && board[4] == "o" && board[7] == "o")
+                ||  (board[2] == "o" && board[5] == "o" && board[8] == "o")
+                ||  (board[0] == "o" && board[4] == "o" && board[8] == "o")
+                ||  (board[2] == "o" && board[4] == "o" && board[6] == "o")) {
+                    gameEnded = true;
+                    var text = ""
+                    if (turn%2 == 0) {text += "You (O) win!"; playerWin++} else {text += "The Computer (O) wins!"; computerWin++;}
+                    document.getElementById("winner").innerHTML = text;
+                } else
+            if (!board.includes(0)) {document.getElementById("winner").innerHTML = "It was a draw!"; gameEnded = true;}
+            if (gameEnded == true) {
+                document.getElementById("reset").style.visibility = "visible";
+                var stats = document.getElementById("statistics");
+                stats.style.visibility = "visible";
+                stats.innerHTML = "Player Wins: " + playerWin + " | Computer Wins: " + computerWin + " | Draws: " + draws;
+            }
+        }
+        
+        function generateRandom() {
+            return Math.floor(Math.random()*9);
+        }
+
+        function resetGame() {
+            document.getElementById("reset").style.visibility = "hidden";
+            for (let i = 0; i < 9; i++) {
+                if (board[i] == 0) {continue;} 
+                board[i] = 0;
+                let node =  document.getElementById(i.toString());
+                node.removeChild(node.firstChild);
+                turn = 1;
+                gameEnded = false;
+            }
+        }
+    </script>
+</body>
+</html>

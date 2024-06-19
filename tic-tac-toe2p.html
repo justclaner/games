@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            text-align: center;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-drag: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #board {
+            margin: 0 auto;
+            width: 540px;
+            height:540px;
+            border: 1px solid black;
+            display:flex;
+            flex-wrap: wrap;
+        }
+
+        #board div {
+            width: 178px;
+            height: 178px;
+            border: 1px solid black;
+        }
+
+        .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        #board p {
+            font-size: 124px;
+        }
+
+        #reset {
+            padding: 5px;
+            margin: 5px;
+            visibility:hidden;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic Tac Toe (2P)</h1>
+    <div id="board"></div>
+    <p id="winner"></p>
+    <p id="statistics" style="visibility: hidden;">s</p>
+    <button id="reset" onclick="resetGame()" >Another Round</button>
+
+    <script>
+        var turn = 1;
+
+        var xWin = 0;
+        var oWin = 0;
+        var draws = 0;
+
+        var gameEnded = false;
+        var board = [];
+        for (let i = 0; i < 9; i++) {board.push(0);}
+        window.onload = function() {
+            createGame();
+        }
+
+        function createGame() {
+            for (let i = 0; i < 9; i++) {
+                var tile = document.createElement("div");
+                tile.id = i.toString();
+                document.getElementById("board").appendChild(tile);
+                tile.addEventListener("click",move);
+                tile.classList.add("center");
+            }
+        } 
+        
+        function move() {
+            if (this.childElementCount == 1 || gameEnded == true) {return;}
+            var node = document.createElement("p");
+            this.appendChild(node);
+            if (turn%2 == 1) {
+            node.innerHTML = "X";
+            board[this.id] = "x";
+            } else {
+            node.innerHTML = "O";
+            board[this.id] = "o";
+            }
+            turn++;
+
+            checkGame();
+        }
+        
+        function checkGame() {
+            if (    (board[0] == "x" && board[1] == "x" && board[2] == "x")
+                ||  (board[3] == "x" && board[4] == "x" && board[5] == "x")
+                ||  (board[6] == "x" && board[7] == "x" && board[8] == "x")
+                ||  (board[0] == "x" && board[3] == "x" && board[6] == "x")
+                ||  (board[1] == "x" && board[4] == "x" && board[7] == "x")
+                ||  (board[2] == "x" && board[5] == "x" && board[8] == "x")
+                ||  (board[0] == "x" && board[4] == "x" && board[8] == "x")
+                ||  (board[2] == "x" && board[4] == "x" && board[6] == "x")) {
+                    gameEnded = true;
+                    document.getElementById("winner").innerHTML = "Result: X wins!"
+                    xWin++;
+                } else
+            if (    (board[0] == "o" && board[1] == "o" && board[2] == "o")
+                ||  (board[3] == "o" && board[4] == "o" && board[5] == "o")
+                ||  (board[6] == "o" && board[7] == "o" && board[8] == "o")
+                ||  (board[0] == "o" && board[3] == "o" && board[6] == "o")
+                ||  (board[1] == "o" && board[4] == "o" && board[7] == "o")
+                ||  (board[2] == "o" && board[5] == "o" && board[8] == "o")
+                ||  (board[0] == "o" && board[4] == "o" && board[8] == "o")
+                ||  (board[2] == "o" && board[4] == "o" && board[6] == "o")) {
+                    gameEnded = true;
+                    document.getElementById("winner").innerHTML = "Result: O wins!"
+                    oWin++;
+                }
+            if (turn == 10) {document.getElementById("winner").innerHTML = "Result: Draw!"; gameEnded = true; draws++;}
+            if (gameEnded == true) {
+                document.getElementById("reset").style.visibility = "visible";
+                var stats = document.getElementById("statistics");
+                stats.style.visibility = "visible";
+                stats.innerHTML = "X's Wins: " + xWin + " | O's Wins: " + oWin + " | Draws: " + draws;
+            }
+        }
+
+        function resetGame() {
+            document.getElementById("reset").style.visibility = "hidden";
+            for (let i = 0; i < 9; i++) {
+                if (board[i] == 0) {continue;} 
+                board[i] = 0;
+                let node =  document.getElementById(i.toString());
+                node.removeChild(node.firstChild);
+                turn = 1;
+                gameEnded = false;
+            }
+        }
+    </script>
+</body>
+</html>
