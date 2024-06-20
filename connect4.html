@@ -58,7 +58,7 @@
         }
         .tileSlide {
             transform: translate(-5px,-5px);
-            animation:slideIn 0.5s;
+            animation:slideIn 0.5s linear;
             animation-play-state: paused;
             border: 0px;
         }
@@ -69,12 +69,12 @@
 
         @keyframes slideIn {
             0% {transform: translate(-5px,-70vh);}
-            25% {transform: translate(-5px,-5px);}
-            50% {transform: translate(-5px,-5vh);}
-            65% {transform: translate(-5px,-5px);}
-            75% {transform: translate(-5px,-2vh);}
+            40% {transform: translate(-5px,-5px);}
+
+            55% {transform: translate(-5px,-10vh);}
             85% {transform: translate(-5px,-5px);}
-            95% {transform: translate(-5px,-15px);}
+
+            90% {transform: translate(-5px,-15px);}
             100% {transform: translate(-5px,-5px);}
         }
 
