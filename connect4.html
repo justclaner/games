@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4</title>
+    <style>
+        body {
+           text-align: center;
+           overflow-y:scroll;
+        }
+        
+        .center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #board {
+            position: relative;
+            display:flex;
+            margin: 0 auto;
+            flex-wrap:wrap;
+
+            width: 630px;
+            height: 540px;
+            background-color: blue;
+            border: 10px darkblue solid;
+        }
+        #board div {
+            width: 70px;
+            height: 70px;
+            margin: 5px;
+            border-radius: 50%;
+            background-color:black;
+            border: 5px darkblue solid;
+        }
+
+        .noDisplay {
+            display: none;
+        }
+
+        button {
+            background-color: rgb(170,170,170);
+            border: 2px solid black;
+            border-radius: 10px;
+            width: fit-content;
+            height:fit-content;
+            padding:10px;
+            margin: 0 auto;
+        }
+        button:hover {
+            background-color: rgb(230,230,230);
+        }
+        button:active {
+            background-color: rgb(200,200,200);
+            transform:translateY(1px);
+        }
+        .tileSlide {
+            transform: translate(-5px,-5px);
+            animation:slideIn 0.5s;
+            animation-play-state: paused;
+            border: 0px;
+        }
+        @keyframes fade {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideIn {
+            0% {transform: translate(-5px,-70vh);}
+            25% {transform: translate(-5px,-5px);}
+            50% {transform: translate(-5px,-5vh);}
+            65% {transform: translate(-5px,-5px);}
+            75% {transform: translate(-5px,-2vh);}
+            85% {transform: translate(-5px,-5px);}
+            95% {transform: translate(-5px,-15px);}
+            100% {transform: translate(-5px,-5px);}
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Connect 4</h1>
+    <div id="board" ></div>
+    <p id="stats" class="noDisplay">s</p>
+    <h3 id="winner" class="noDisplay">s</h3>
+    <button id="reset" class="noDisplay" onclick="resetGame()">Another Round</button>
+    <script>
+        var board;
+        var rows = 6;
+        var cols = 7;
+        var collumn;
+        var gameEnded;
+        var winner;
+        var currPlayer;
+        var red = 0;
+        var yellow = 0;
+        var draw = 0;
+
+        var winText = document.getElementById("winner");
+        var statText = document.getElementById("stats");
+
+        window.onload = function() {
+            createGame();
+        }
+        function createGame() {
+        board = [];
+        gameEnded = false;
+        currPlayer = "red";
+        collumn = [5,5,5,5,5,5,5];
+        for (var i = 0; i < rows; i++) {
+            var row = [];
+            for (var j = 0; j < cols; j++) {
+                row.push(0);
+                var circle = document.createElement("div");
+                document.getElementById("board").append(circle);
+                circle.id = i.toString() + "-" + j.toString();
+                circle.addEventListener("click",move);
+
+                var tile = document.createElement("div");
+                tile.classList.add("tileSlide");
+                tile.style.border = "0px";
+                circle.append(tile);
+            }
+            board.push(row);
+        }
+    }
+
+    function move() {
+        if (gameEnded) {return;}
+        let coords = this.id;
+        let x = parseInt(coords[2]);
+        let y = parseInt(coords[0]);
+
+        y = collumn[x];
+
+        board[y][x] = currPlayer;
+
+        let node = document.getElementById(y.toString() + "-" + x.toString()).firstChild;
+        if (currPlayer == "red") {
+           node.style.backgroundImage = "radial-gradient(rgb(255,0,0),rgb(0,0,0))";
+           //node.style.border = "0px";
+            currPlayer = "yellow";
+        } else {
+            node.style.backgroundImage = "radial-gradient(rgb(255,255,0),rgb(0,0,0))";
+            //node.style.border = "0px";
+            currPlayer = "red";
+        }
+        node.style.animationPlayState = "running";
+        collumn[x]--;
+        checkWin();
+    }
+
+    function checkWin() {
+        for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < 4; j++) {
+            if (board[i][j] == "red" && board[i][j+1] == "red" && board[i][j+2] == "red" && board[i][j+3] == "red") {
+                gameEnded = true;
+                winner = "red";
+                red++;
+            } else if (board[i][j] == "yellow" && board[i][j+1] == "yellow" && board[i][j+2] == "yellow" && board[i][j+3] == "yellow") {
+                gameEnded = true;
+                winner = "yellow";
+                yellow++;
+            }
+        }
+        }
+
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[j][i] == "red" && board[j+1][i] == "red" && board[j+2][i] == "red" && board[j+3][i] == "red") {
+                gameEnded = true;
+                winner = "red";
+                red++;
+            } else if (board[j][i] == "yellow" && board[j+1][i] == "yellow" && board[j+2][i] == "yellow" && board[j+3][i] == "yellow") {
+                gameEnded = true;
+                winner = "yellow";
+                yellow++
+            }
+            }
+        }
+        for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 4; j++) {
+            if ((board[i][j] == "red" && board[i+1][j+1] == "red" && board[i+2][j+2] == "red" && board[i+3][j+3] == "red") 
+            ||  (board[i+3][j] == "red" && board[i+2][j+1] == "red" && board[i+1][j+2] == "red" && board[i][j+3] == "red")) {
+                gameEnded = true;
+                winner = "red";
+                red++;
+                } else
+            if ((board[i][j] == "yellow" && board[i+1][j+1] == "yellow" && board[i+2][j+2] == "yellow" && board[i+3][j+3] == "yellow") 
+            ||  (board[i+3][j] == "yellow" && board[i+2][j+1] == "yellow" && board[i+1][j+2] == "yellow" && board[i][j+3] == "yellow")) {
+                gameEnded = true;
+                winner = "yellow"
+                yellow++;
+        }
+    }
+    }
+    if (isEmpty(collumn) && !gameEnded) {
+        gameEnded = true;
+
+        winText.innerHTML = "It was a draw!";
+        draw++;
+    } else if (gameEnded) {
+        document.getElementById("reset").style.display = "block";
+
+        winText.innerHTML = winner[0].toUpperCase() + winner.slice(1) + " wins!"
+    }
+
+    if (gameEnded) {
+        winText.style.display = "block";
+        statText.style.display = "block";
+        statText.innerHTML = "Red's Wins: " + red + " | Yellow's Wins: " + yellow + " | Draws: " + draw;
+    }
+}
+
+        function resetGame() {
+            winText.style.display = "none";
+            document.getElementById("reset").style.display = "none";
+            var playArea = document.getElementById("board");
+            while (playArea.hasChildNodes()) {playArea.removeChild(playArea.firstChild);}
+            createGame();
+        }
+
+        function isEmpty(arr) {
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i] != -1) {return false;}
+            }
+            return true
+        }
+    </script>
+</body>
+</html>
