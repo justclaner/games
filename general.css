@@ -1,0 +1,30 @@
+body {
+    text-align: center;
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#board {
+    display:flex;
+    margin: 0 auto;
+    flex-wrap:wrap;
+}
+button {
+    background-color: rgb(170,170,170);
+    border: 2px solid black;
+    border-radius: 10px;
+    width: fit-content;
+    height:fit-content;
+    padding:10px;
+    margin: 0 auto;
+}
+button:hover {
+    background-color: rgb(230,230,230);
+}
+button:active {
+    background-color: rgb(200,200,200);
+    transform:translateY(1px);
+}

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15 Puzzle</title>
+    <link rel="stylesheet" href="general.css">
+    <style>
+        :root {
+            --length:0.05s;
+            --timing:ease-out;
+        }
+        #board {
+            width: 600px;
+            height: 600px;
+            border: 1px solid black;
+        }
+        #board div {
+            margin: 0px;
+            width: 148px;
+            height: 148px;
+            border: 1px solid black;
+            display :flex;
+        }
+
+        .slideLeft {
+            animation: slideLeft var(--length);
+            animation-timing-function:var(--timing);
+        }
+        .slideRight {
+            animation: slideRight var(--length);
+            animation-timing-function: var(--timing);
+        }
+        .slideUp {
+            animation: slideUp var(--length);
+            animation-timing-function: var(--timing);
+        }
+        .slideDown {
+            animation: slideDown var(--length);
+            animation-timing-function: var(--timing);
+        }
+
+        @keyframes slideLeft {
+            from {transform:translateX(148px);}
+            to {transform:translateX(0px);}
+        }
+        @keyframes slideRight {
+            from {transform:translateX(-148px);}
+            to {transform:translateX(0px);}
+        }
+        @keyframes slideUp {
+            from {transform:translateY(148px);}
+            to {transform:translateY(0px);}
+        }
+        @keyframes slideDown {
+            from {transform:translateY(-148px);}
+            to {transform:translateY(0px);}
+        }
+    </style>
+</head>
+<body>
+    <h1>15 Puzzle</h1>
+    <div id="board" class="center"></div>
+
+    <script>
+        //code a checkWin
+        //code a resetGame
+        //add animations to onscreen clicks
+        var seconds = 0.05;
+        var rows = 4;
+        var collumns = 4;
+        var board = document.getElementById("board");
+        var numbers = [];
+        var boardConfig;
+        var emptyCoord;
+        var animationLength = seconds*1000;
+        window.onload = function() {
+            boardConfig = [[1,2,3,4],
+                     [5,6,7,8],
+                     [9,10,11,12],
+                     [13,14,15,0]];
+            shuffle(boardConfig);
+            for (let i = 0; i < 16; i++) {
+                numbers.push(i);
+            }
+            console.log(numbers);
+            for (let i = 0; i < collumns; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        let tile = document.createElement("div");
+                        tile.classList.add("center");
+                        tile.id = j.toString() + "-" + i.toString();
+                        board.appendChild(tile);
+                        let tileNum = boardConfig[i][j];
+                        tile.addEventListener("click",userClick);
+
+                        let tileNumDisplay = document.createElement("p");
+                        if (tileNum != 0) {
+                        tileNumDisplay.innerHTML = tileNum.toString();
+                        } else {tileNumDisplay.innerHTML = ""; emptyCoord = tile.id;}
+                        tileNumDisplay.style.fontSize = "124px";
+                        tileNumDisplay.style.margin = "0 auto";
+                        tile.appendChild(tileNumDisplay);
+                    }
+            }
+        }
+
+        document.addEventListener("keydown",keyPress);
+
+        function keyPress(e) {
+            let input = e.key;
+            let emptyX = parseInt(emptyCoord[0]);
+            let emptyY = parseInt(emptyCoord[2]);
+
+            let leftTile = 0;
+            let rightTile = 0;
+            let topTile = 0;
+            let bottomTile = 0;
+
+            let emptyTile = document.getElementById(emptyCoord);
+            if (emptyX - 1 >= 0) {leftTile = document.getElementById((emptyX-1).toString() + "-" + emptyY.toString());}
+            if (emptyX + 1 <= 3) {rightTile = document.getElementById((emptyX+1).toString() + "-" + emptyY.toString());}
+            if (emptyY - 1 >= 0) {topTile = document.getElementById(emptyX.toString() + "-" + (emptyY - 1).toString());}
+            if (emptyY + 1 <= 3) {bottomTile = document.getElementById(emptyX.toString() + "-" + (emptyY + 1).toString());}
+
+            if (input == "ArrowLeft" && rightTile != 0) {
+                removeAllClasses(rightTile);
+                boardConfig[emptyY][emptyX] = parseInt(rightTile.firstChild.innerHTML);
+                boardConfig[emptyY][emptyX + 1] = 0;
+
+                emptyTile.firstChild.innerHTML = rightTile.firstChild.innerHTML;
+                rightTile.firstChild.innerHTML = "";
+                emptyCoord = rightTile.id;
+
+                emptyTile.classList.add("slideLeft");
+               // setTimeout(()=>{emptyTile.classList.remove("slideLeft");},animationLength);
+            } else if (input == "ArrowRight" && leftTile != 0) {
+                removeAllClasses(leftTile);
+                boardConfig[emptyY][emptyX] = parseInt(leftTile.firstChild.innerHTML);
+                boardConfig[emptyY][emptyX - 1] = 0;
+
+                emptyTile.firstChild.innerHTML = leftTile.firstChild.innerHTML;
+                leftTile.firstChild.innerHTML = "";
+                emptyCoord = leftTile.id;
+
+                emptyTile.classList.add("slideRight");
+                //setTimeout(()=>{emptyTile.classList.remove("slideRight");},animationLength);
+            } else if (input == "ArrowUp" && bottomTile != 0) {
+                removeAllClasses(bottomTile);
+                boardConfig[emptyY][emptyX] = parseInt(bottomTile.firstChild.innerHTML);
+                boardConfig[emptyY + 1][emptyX] = 0;
+
+                emptyTile.firstChild.innerHTML = bottomTile.firstChild.innerHTML;
+                bottomTile.firstChild.innerHTML = "";
+                emptyCoord = bottomTile.id;
+
+                emptyTile.classList.add("slideUp");
+                //setTimeout(()=>{emptyTile.classList.remove("slideUp");},animationLength);
+            } else if (input == "ArrowDown" && topTile != 0) {
+                removeAllClasses(topTile);
+                boardConfig[emptyY][emptyX] = parseInt(topTile.firstChild.innerHTML);
+                boardConfig[emptyY - 1][emptyX] = 0;
+
+                emptyTile.firstChild.innerHTML = topTile.firstChild.innerHTML;
+                topTile.firstChild.innerHTML = "";
+                emptyCoord = topTile.id;
+
+                emptyTile.classList.add("slideDown");
+               // setTimeout(()=>{emptyTile.classList.remove("slideDown");},animationLength);
+            }
+            // let a = leftTile;
+            // console.log(a);
+            // console.log(a == undefined);
+            // console.log(input);
+        }
+
+        function userClick() {
+            let emptyX = parseInt(emptyCoord[0]);
+            let emptyY = parseInt(emptyCoord[2]);
+            let clickX = parseInt(this.id[0]);
+            let clickY = parseInt(this.id[2]);
+
+            let emptyTile = document.getElementById(emptyCoord);
+
+            if (clickX == emptyX - 1 && clickY == emptyY) {
+                boardConfig[emptyY][emptyX] = boardConfig[emptyY][clickX];
+                boardConfig[emptyY][clickX] = 0;
+
+                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
+                emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
+                clickTile.firstChild.innerHTML = "";
+                emptyCoord = this.id;
+            } else
+            if (clickX == emptyX + 1 && clickY == emptyY) {
+                boardConfig[emptyY][emptyX] = boardConfig[emptyY][clickX];
+                boardConfig[emptyY][clickX] = 0;
+
+                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
+                emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
+                clickTile.firstChild.innerHTML = "";
+                emptyCoord = this.id;
+            } else
+            if (clickX == emptyX && clickY == emptyY - 1) {
+                boardConfig[emptyY][emptyX] = boardConfig[clickY][emptyX];
+                boardConfig[clickY][emptyX] = 0;
+
+                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
+                emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
+                clickTile.firstChild.innerHTML = "";
+                emptyCoord = this.id;
+            } else
+            if (clickX == emptyX && clickY == emptyY + 1) {
+                boardConfig[emptyY][emptyX] = boardConfig[clickY][emptyX];
+                boardConfig[clickY][emptyX] = 0;
+
+                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
+                emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
+                clickTile.firstChild.innerHTML = "";
+                emptyCoord = this.id;
+            }
+            
+        }
+       // console.log(boardConfig);
+
+
+
+        function shuffle(arr) {
+            let turns = Math.floor(Math.random()*(100-60)+60);
+            let emptyX = 3;
+            let emptyY = 3;
+
+            for (let i = 0; i < turns*2; i++) {
+                let leftX = emptyX - 1;
+                let rightX = emptyX + 1;
+                let topY = emptyY - 1;
+                let bottomY = emptyY + 1;
+                let randomNum = Math.floor(Math.random()*4);
+                switch (randomNum) {
+                    case 0:
+                        if (leftX >= 0) {
+                            arr[emptyX][emptyY] = arr[leftX][emptyY];
+                            arr[leftX][emptyY] = 0;
+                            emptyX = leftX;
+                        }
+                    break;
+                    case 1:
+                        if (rightX <= 3) {
+                            arr[emptyX][emptyY] = arr[rightX][emptyY];
+                            arr[rightX][emptyY] = 0;
+                            emptyX = rightX;
+                        }
+                    break;
+                    case 2:
+                        if (topY >= 0) {
+                            arr[emptyX][emptyY] = arr[emptyX][topY];
+                            arr[emptyX][topY] = 0;
+                            emptyY = topY;
+                        }
+                    break;
+                    case 3:
+                        if (bottomY <= 3) {
+                            arr[emptyX][emptyY] = arr[emptyX][bottomY];
+                            arr[emptyX][bottomY] = 0;
+                            emptyY = bottomY;
+                        }
+                    break;
+                }
+            }
+            console.log(boardConfig);
+        }
+
+        function removeAllClasses(movedTile) {
+            movedTile.classList.remove("slideLeft");
+            movedTile.classList.remove("slideRight");
+            movedTile.classList.remove("slideUp");
+            movedTile.classList.remove("slideDown");
+        }
+    </script>
+</body>
+</html>
