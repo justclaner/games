@@ -56,34 +56,43 @@
     <div id="options">
         <button onclick="playerChoice(0)">Choose X</button><button onclick="playerChoice(1)">Choose O</button>
     </div>
+    <button id="reset" onclick="resetGame()" >Another Round</button>
     <div id="board" style="visibility:hidden"></div>
     <p id="winner"></p>
     <p id="statistics" style="visibility: hidden;">s</p>
-    <button id="reset" onclick="resetGame()" >Another Round</button>
     <script>
         var turn = 1;
         var gameEnded = false;
         var board = [];
+        var grid = document.getElementById("board");
+        var playerOption;
 
         var playerWin = 0;
         var computerWin = 0;
         var draws = 0;
 
+        var firstGame = true;
         for (let i = 0; i < 9; i++) {board.push(0);}
         window.onload = function() {
             createGame();
         }
 
         function playerChoice(option) {
-            document.getElementById("options").style.display = "none";
+            playerOption = option;
+            document.getElementById("options").style.visibility = "hidden";
             document.getElementById("board").style.visibility = "visible";
             if (option == 0) {turn = 1;} else {
                 turn = 2;
+                if (firstGame) {
                 var computerNode = document.createElement("p");
                 var computerPosition = generateRandom();
                 document.getElementById(computerPosition.toString()).appendChild(computerNode);
                 computerNode.innerHTML = "X";
                 board[computerPosition] = "x";
+                }
+            }
+            if (!firstGame) {
+                document.getElementById("reset").style.visibility = "visible";
             }
         }
 
@@ -102,32 +111,41 @@
             var node = document.createElement("p");
             this.appendChild(node);
             var computerPosition = 0;
-            var computerNode = document.createElement("p");
+           
             if (turn < 9) {
             computerPosition = generateRandom();
             while (computerPosition == this.id || document.getElementById(computerPosition.toString()).childElementCount == 1) {computerPosition = generateRandom();}
-            document.getElementById(computerPosition.toString()).appendChild(computerNode);
             }
 
             if (turn%2 == 1) {
             node.innerHTML = "X";
             board[this.id] = "x";
-            if (turn < 9) {
+           checkGame();
+            if (turn < 9 && !gameEnded) {
+            var computerNode = document.createElement("p");
+            document.getElementById(computerPosition.toString()).appendChild(computerNode);
             computerNode.innerHTML = "O";
             board[computerPosition] = "o"
+            checkGame();
             }
             } else {
             node.innerHTML = "O";
             board[this.id] = "o";
+           checkGame();
+            if (!gameEnded) {
+            var computerNode = document.createElement("p");
+            document.getElementById(computerPosition.toString()).appendChild(computerNode);
             computerNode.innerHTML = "X";
             board[computerPosition] = "x"
+            checkGame();
+            }
             }
 
             turn+=2;
 
             console.log(turn);
             console.log(board);
-            checkGame();
+
         }
         
         function checkGame() {
@@ -159,7 +177,10 @@
                 } else
             if (!board.includes(0)) {document.getElementById("winner").innerHTML = "It was a draw!"; gameEnded = true;}
             if (gameEnded == true) {
-                document.getElementById("reset").style.visibility = "visible";
+                firstGame = false;
+                document.getElementById("options").style.visibility = "visible";
+              
+                document.getElementById("winner").style.visibility = "visible";
                 var stats = document.getElementById("statistics");
                 stats.style.visibility = "visible";
                 stats.innerHTML = "Player Wins: " + playerWin + " | Computer Wins: " + computerWin + " | Draws: " + draws;
@@ -172,13 +193,19 @@
 
         function resetGame() {
             document.getElementById("reset").style.visibility = "hidden";
+            document.getElementById("winner").style.visibility = "hidden";
             for (let i = 0; i < 9; i++) {
-                if (board[i] == 0) {continue;} 
                 board[i] = 0;
-                let node =  document.getElementById(i.toString());
-                node.removeChild(node.firstChild);
-                turn = 1;
-                gameEnded = false;
+            }
+            gameEnded = false;
+            while (grid.hasChildNodes()) {grid.removeChild(grid.firstChild);}
+            createGame();
+            if (!firstGame && turn  == 2) {
+                var computerNode = document.createElement("p");
+                var computerPosition = generateRandom();
+                document.getElementById(computerPosition.toString()).appendChild(computerNode);
+                computerNode.innerHTML = "X";
+                board[computerPosition] = "x";
             }
         }
     </script>
