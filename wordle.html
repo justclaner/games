@@ -95,6 +95,7 @@
         gameEnded = false;
         unique = new Map();
         randomWord = wordBank[Math.floor(Math.random()*wordBank.length)];
+   //     console.log(randomWord);
         for (let i = 0; i < 5; i++) {
             let char = randomWord[i];
             if (!unique.has(char)) {unique.set(char,1);}
@@ -155,7 +156,7 @@
                     node.style.backgroundColor = "green";
                     yellowIndicator.set(letter,yellowIndicator.get(letter)-1);
                 } else if (randomWord.includes(letter)) {
-                    if (unique.get(letter) > 0) {
+                    if (yellowIndicator.get(letter) > 0) {
                     node.style.backgroundColor = "yellow";
                     yellowIndicator.set(letter,yellowIndicator.get(letter)-1);
                     } else {
@@ -164,6 +165,7 @@
                 } else {
                     node.style.backgroundColor = "gray";
                 }
+              //  console.log(yellowIndicator);
             }
 
                 rowStart += 5;
