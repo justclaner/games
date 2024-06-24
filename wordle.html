@@ -6,14 +6,16 @@
     <style>
         body {
             text-align:center;
+            background-color: rgb(20,20,20);
+            color: white;
         }
         #board {
             margin: 0 auto;
             display: flex;
             flex-wrap:wrap;
-            width:445px;
-            height:550px;
-            border:1px solid black;
+            width:455px;
+            height:560px;
+            border:1px solid rgb(130,130,130);
             justify-content: center;
             align-items: center;
         }
@@ -21,7 +23,7 @@
         #board div {
             width: 80px;
             height: 80px;
-            border: 1px solid black;
+            border: 2px solid rgb(130,130,130);
             margin: 3px;
         }
         
@@ -32,7 +34,7 @@
         }
 
         button {
-            background-color: rgb(170,170,170);
+            background-color: rgb(220,220,220);
             border: 2px solid black;
             border-radius: 10px;
             width: fit-content;
@@ -71,7 +73,21 @@
             margin: 0 auto;
         }
 
- 
+        .type {
+            animation: zoom 0.4s;
+        }
+        @keyframes zoom {
+            from {scale:1.1;}
+            to {scale: 1,0;}
+        }
+        .rotate {
+            animation: rotate 0.4s linear;
+        }
+        @keyframes rotate {
+            0% {transform: rotateX(0);}
+            50% {transform: rotateX(90deg);}
+            100% {transform: rotateX(0);}
+        }
     </style>
     <title>Wordle</title>
 </head>
@@ -149,6 +165,7 @@
             keyTile.appendChild(char);
             keyTile.onclick = function() {handleInputs(topChars[i]);}
             topRow.appendChild(keyTile);
+            keyTile.id = topChars[i];
         }
 
         for (let i = 0; i < middleChars.length; i++) {
@@ -159,6 +176,7 @@
     
             keyTile.onclick = function() {handleInputs(middleChars[i]);}
             middleRow.appendChild(keyTile);
+            keyTile.id = middleChars[i];
         }
 
         let enterTile = document.createElement("BUTTON");
@@ -176,6 +194,7 @@
             keyTile.appendChild(char);
             keyTile.onclick = function() {handleInputs(bottomChars[i]);}
             bottomRow.appendChild(keyTile);
+            keyTile.id = bottomChars[i];
         }
 
         let backspaceTile = document.createElement("BUTTON");
@@ -188,7 +207,7 @@
 
         document.addEventListener("keydown",(e)=>{
             let code = e.which;
-            if ((code >= 97 && code <= 122) || (code >= 65 && code <= 90) || code == 13 || code == 8) {handleInputs(e.key);}
+            if ((code >= 65 && code <= 90) || code == 13 || code == 8) {handleInputs(e.key);}
         });
 
         window.onload = function() {
@@ -237,6 +256,9 @@
             letter.classList.add("letter");
             letterPos++;
             tile.appendChild(letter);
+            tile.classList.add("type");
+            tile.style.borderColor = "rgb(230,230,230)";
+            setInterval(()=>{tile.classList.remove("type");},400);
             }
 
             if (n == 'Backspace' && letterPos > rowStart) {
@@ -244,6 +266,7 @@
                 letterPos--;
                 let tile =  document.getElementById(letterPos.toString());
                 tile.removeChild(tile.firstChild);
+                tile.style.borderColor = "rgb(130,130,130)";
             }
 
             if (n == 'Enter' && letterPos%5 == 0) {
@@ -276,9 +299,12 @@
                 for (let i = 1; i <= 5; i++) {
                     let node = eval("node" + i);
                     let letter = eval("letter" + i);
+          
                 if (letter.toLowerCase() == randomWord[i-1]) {
                     checked.push(i);
+                    green.push(letter);
                     node.style.backgroundColor = "green";
+                    document.getElementById(letter).style.backgroundColor = "green";
                     yellowIndicator.set(letter.toLowerCase(),yellowIndicator.get(letter.toLowerCase())-1);
                 } 
             }
@@ -290,13 +316,16 @@
                 if (randomWord.includes(letter.toLowerCase())) {
                    
                     if (yellowIndicator.get(letter.toLowerCase()) > 0) {
-                    node.style.backgroundColor = "yellow";
+                    node.style.backgroundColor = "rgb(200,200,50)";
+                    document.getElementById(letter).style.backgroundColor = "rgb(200,200,50)";
                     yellowIndicator.set(letter.toLowerCase(),yellowIndicator.get(letter.toLowerCase())-1);
                     } else {
                         node.style.backgroundColor = "gray";
+                        document.getElementById(letter).style.backgroundColor = "gray";
                     }
                 } else {
                     node.style.backgroundColor = "gray";
+                    document.getElementById(letter).style.backgroundColor = "gray";
                 }
             }
 
@@ -304,19 +333,40 @@
                 rowEnd += 5;
                 attempts++;
                 if (wordTyped == randomWord) {
-                    gameEnded = true;
-                    displayWin();
+                    setTimeout(displayWin,2000);
                 } else if (attempts == 6) {
-                    document.getElementById("fail").play();
-                    gameEnded = true;
-                    winText.innerHTML = randomWord;
-                    winText.style.display = "block";
-                    resetButton.style.display = "block";
+                    setTimeout(()=>{ document.getElementById("fail").play();},1000); //play sound earlier
+                    setTimeout(displayLoss,1500);
+                }
+
+                for (let i = 5; i > 0; i--) {
+                    let delay = (5-i)*0.25;
+                    let tile = document.getElementById((letterPos-i).toString());
+                    let tileStyle = tile.style;
+                    let tileChildStyle = tile.firstChild.style;
+                    let color = tileStyle.backgroundColor;
+                    
+              
+                    tileStyle.backgroundColor = "rgb(20,20,20)";
+                    setTimeout(()=>{
+                        tileStyle.backgroundColor = color;
+                        tileStyle.border = "2px solid rgb(20,20,20)"
+                    },(200 + delay*1000));
+                  tileStyle.animationDelay = `${delay}s`;
+                    tile.classList.add("rotate");
                 }
             } 
         
         }
+        function displayLoss() {
+            gameEnded = true;
+            winText.innerHTML = randomWord;
+            winText.style.display = "block";
+            resetButton.style.display = "block";
+        }
         function displayWin() {
+            document.getElementById("correct").play();
+            gameEnded = true;
             switch (attempts) {
                 case 1: winText.innerHTML = "Genius";
                 break;
@@ -331,7 +381,6 @@
                 case 6: winText.innerHTML = "Phew";
                 break;
             }
-            document.getElementById("correct").play();
             winText.style.display = "block";
             resetButton.style.display = "block";
         }
