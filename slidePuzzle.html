@@ -6,9 +6,16 @@
     <title>15 Puzzle</title>
     <link rel="stylesheet" href="general.css">
     <style>
+        body {
+            -moz-user-select: none;
+            -webkit-user-drag: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
         :root {
             --length:0.05s;
             --timing:ease-out;
+            --trans:148px;
         }
         #board {
             width: 600px;
@@ -17,12 +24,18 @@
         }
         #board div {
             margin: 0px;
-            width: 148px;
-            height: 148px;
             border: 1px solid black;
             display :flex;
         }
-
+        
+        .prompt {
+            margin: 0 auto;
+            position: absolute; 
+            top: 50%;
+            left: 50%; 
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); 
+        }
         .slideLeft {
             animation: slideLeft var(--length);
             animation-timing-function:var(--timing);
@@ -41,73 +54,123 @@
         }
 
         @keyframes slideLeft {
-            from {transform:translateX(148px);}
+            from {transform:translateX(var(--trans));}
             to {transform:translateX(0px);}
         }
         @keyframes slideRight {
-            from {transform:translateX(-148px);}
+            from {transform:translateX(calc(-1*var(--trans)));}
             to {transform:translateX(0px);}
         }
         @keyframes slideUp {
-            from {transform:translateY(148px);}
+            from {transform:translateY(var(--trans));}
             to {transform:translateY(0px);}
         }
         @keyframes slideDown {
-            from {transform:translateY(-148px);}
+            from {transform:translateY(calc(-1*var(--trans)));}
             to {transform:translateY(0px);}
         }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+        }
+
     </style>
 </head>
 <body>
-    <h1>15 Puzzle</h1>
-    <div id="board" class="center"></div>
-
+    <h1>Slide Puzzle</h1>
+    <div class="prompt" id="prompt">
+        <p id="showDimensions">Choose 4x4 board to play on.</p>
+        <label for="chooseN">NxN:</label>
+        <input type="range" id="chooseN" min="3" max="10" value="4" style="margin: 3px;" oninput="updateDimension()"></p>
+        <button onclick="startGame()">Play Game</button>
+    </div>
+    <!-- <p id="showDimensions">Choose 4x4 board to play on.</p>
+    <label for="chooseN">NxN:</label>
+    <input type="range" id="chooseN" min="3" max="10" value="4" style="margin: 3px;" oninput="updateDimensionDisplay()"></p> -->
+    <div id="board" class="center" style="visibility: hidden;"></div>
+    <br>
+    <p id="moveCount" style="display: none; font-size: 48px; margin:0;">Moves: 0</p>
+    <div style="width:100%;text-align: center; visibility: hidden;" id="container">
+        <button id="reset" style="display: inline-block;" onclick="resetGame()">Play Again</button>
+        <button id="changeDimension" style="display: inline-block;" onclick="backToHome()">Change NxN Dimensions of Board</button>
+    </div>
+    
+    <p id="tooltip" style="display:none;">Press Space for quick-restart!</p>
     <script>
         //code a checkWin
         //code a resetGame
         //add animations to onscreen clicks
+        var dimensions = 4;
         var seconds = 0.05;
-        var rows = 4;
-        var collumns = 4;
-        var board = document.getElementById("board");
         var numbers = [];
-        var boardConfig;
-        var emptyCoord;
+        var defaultBoard;
+        var boardConfig = generateDefaultBoard(dimensions,dimensions); 
+        var defaultBoard = generateDefaultBoard(dimensions,dimensions); 
         var animationLength = seconds*1000;
-        window.onload = function() {
-            boardConfig = [[1,2,3,4],
-                     [5,6,7,8],
-                     [9,10,11,12],
-                     [13,14,15,0]];
+        var gameEnded;
+        var moves;
+        var boardLength = 600;
+
+
+        var board = document.getElementById("board");
+        var prompt = document.getElementById("prompt");
+        var moveCountElement = document.getElementById("moveCount");
+        var container = document.getElementById("container");
+        var tooltip = document.getElementById("tooltip");
+
+        // window.onload = function() {
+        //    loadGame();
+        // }
+
+        function loadGame() {
+            gameEnded = false;
+            moves = 0;
             shuffle(boardConfig);
+            console.log(boardConfig);
+            console.log(defaultBoard);
+            let tileLength = (boardLength/dimensions)-2;
+            let root = document.querySelector(':root');
+            root.style.setProperty('--trans',`${tileLength}px`)
             for (let i = 0; i < 16; i++) {
                 numbers.push(i);
             }
-            console.log(numbers);
-            for (let i = 0; i < collumns; i++) {
-                    for (let j = 0; j < rows; j++) {
+            
+            for (let i = 0; i < dimensions; i++) {
+                    for (let j = 0; j < dimensions; j++) {
                         let tile = document.createElement("div");
                         tile.classList.add("center");
                         tile.id = j.toString() + "-" + i.toString();
                         board.appendChild(tile);
                         let tileNum = boardConfig[i][j];
                         tile.addEventListener("click",userClick);
-
+                        
+                        tile.style.width = `${tileLength}px`;
+                        tile.style.height = `${tileLength}px`;
+                        //console.log(tile.style.width);
+                        
                         let tileNumDisplay = document.createElement("p");
                         if (tileNum != 0) {
                         tileNumDisplay.innerHTML = tileNum.toString();
                         } else {tileNumDisplay.innerHTML = ""; emptyCoord = tile.id;}
-                        tileNumDisplay.style.fontSize = "124px";
+                        
+                        tileNumDisplay.style.fontSize = `${tileLength-24}px`;
                         tileNumDisplay.style.margin = "0 auto";
                         tile.appendChild(tileNumDisplay);
                     }
             }
+            checkWin(boardConfig);
         }
-
         document.addEventListener("keydown",keyPress);
+
+
 
         function keyPress(e) {
             let input = e.key;
+            if (input == " " && gameEnded) {resetGame();}
+            if (gameEnded) {return;}
+            
+
             let emptyX = parseInt(emptyCoord[0]);
             let emptyY = parseInt(emptyCoord[2]);
 
@@ -118,11 +181,12 @@
 
             let emptyTile = document.getElementById(emptyCoord);
             if (emptyX - 1 >= 0) {leftTile = document.getElementById((emptyX-1).toString() + "-" + emptyY.toString());}
-            if (emptyX + 1 <= 3) {rightTile = document.getElementById((emptyX+1).toString() + "-" + emptyY.toString());}
+            if (emptyX + 1 <= dimensions - 1) {rightTile = document.getElementById((emptyX+1).toString() + "-" + emptyY.toString());}
             if (emptyY - 1 >= 0) {topTile = document.getElementById(emptyX.toString() + "-" + (emptyY - 1).toString());}
-            if (emptyY + 1 <= 3) {bottomTile = document.getElementById(emptyX.toString() + "-" + (emptyY + 1).toString());}
+            if (emptyY + 1 <= dimensions - 1) {bottomTile = document.getElementById(emptyX.toString() + "-" + (emptyY + 1).toString());}
 
             if (input == "ArrowLeft" && rightTile != 0) {
+                moves++;
                 removeAllClasses(rightTile);
                 boardConfig[emptyY][emptyX] = parseInt(rightTile.firstChild.innerHTML);
                 boardConfig[emptyY][emptyX + 1] = 0;
@@ -134,6 +198,7 @@
                 emptyTile.classList.add("slideLeft");
                // setTimeout(()=>{emptyTile.classList.remove("slideLeft");},animationLength);
             } else if (input == "ArrowRight" && leftTile != 0) {
+                moves++;
                 removeAllClasses(leftTile);
                 boardConfig[emptyY][emptyX] = parseInt(leftTile.firstChild.innerHTML);
                 boardConfig[emptyY][emptyX - 1] = 0;
@@ -145,6 +210,7 @@
                 emptyTile.classList.add("slideRight");
                 //setTimeout(()=>{emptyTile.classList.remove("slideRight");},animationLength);
             } else if (input == "ArrowUp" && bottomTile != 0) {
+                moves++;
                 removeAllClasses(bottomTile);
                 boardConfig[emptyY][emptyX] = parseInt(bottomTile.firstChild.innerHTML);
                 boardConfig[emptyY + 1][emptyX] = 0;
@@ -156,6 +222,7 @@
                 emptyTile.classList.add("slideUp");
                 //setTimeout(()=>{emptyTile.classList.remove("slideUp");},animationLength);
             } else if (input == "ArrowDown" && topTile != 0) {
+                moves++;
                 removeAllClasses(topTile);
                 boardConfig[emptyY][emptyX] = parseInt(topTile.firstChild.innerHTML);
                 boardConfig[emptyY - 1][emptyX] = 0;
@@ -171,64 +238,108 @@
             // console.log(a);
             // console.log(a == undefined);
             // console.log(input);
+            document.getElementById("moveCount").textContent = "Moves: " + moves;
+            checkWin(boardConfig);
         }
 
         function userClick() {
+            if (gameEnded) {return;}
+            moves++;
             let emptyX = parseInt(emptyCoord[0]);
             let emptyY = parseInt(emptyCoord[2]);
             let clickX = parseInt(this.id[0]);
             let clickY = parseInt(this.id[2]);
 
             let emptyTile = document.getElementById(emptyCoord);
+            let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
 
             if (clickX == emptyX - 1 && clickY == emptyY) {
                 boardConfig[emptyY][emptyX] = boardConfig[emptyY][clickX];
                 boardConfig[emptyY][clickX] = 0;
 
-                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
                 emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
                 clickTile.firstChild.innerHTML = "";
                 emptyCoord = this.id;
+                removeAllClasses(clickTile);
+                emptyTile.classList.add("slideRight");
             } else
             if (clickX == emptyX + 1 && clickY == emptyY) {
                 boardConfig[emptyY][emptyX] = boardConfig[emptyY][clickX];
                 boardConfig[emptyY][clickX] = 0;
 
-                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
                 emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
                 clickTile.firstChild.innerHTML = "";
                 emptyCoord = this.id;
+                removeAllClasses(clickTile);
+                emptyTile.classList.add("slideLeft");
             } else
             if (clickX == emptyX && clickY == emptyY - 1) {
                 boardConfig[emptyY][emptyX] = boardConfig[clickY][emptyX];
                 boardConfig[clickY][emptyX] = 0;
 
-                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
                 emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
                 clickTile.firstChild.innerHTML = "";
                 emptyCoord = this.id;
+                removeAllClasses(clickTile);
+                emptyTile.classList.add("slideDown");
             } else
             if (clickX == emptyX && clickY == emptyY + 1) {
                 boardConfig[emptyY][emptyX] = boardConfig[clickY][emptyX];
                 boardConfig[clickY][emptyX] = 0;
 
-                let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
                 emptyTile.firstChild.innerHTML = clickTile.firstChild.innerHTML;
                 clickTile.firstChild.innerHTML = "";
                 emptyCoord = this.id;
+                removeAllClasses(clickTile);
+                emptyTile.classList.add("slideUp");
             }
-            
+            document.getElementById("moveCount").textContent = "Moves: " + moves;
+            checkWin(boardConfig);
         }
        // console.log(boardConfig);
+       
+        function checkWin(arr) {
+            let allEqual = true;
+            for (let i = 0; i < dimensions; i++) {
+                for (let j = 0; j < dimensions; j++) {
+                    let tile = document.getElementById(j.toString() + "-" + i.toString());
+                    if (boardConfig[i][j] != defaultBoard[i][j]) {
+                        if (tile.id != ((dimensions - 1).toString() + "-" + (dimensions - 1).toString())) {tile.style.backgroundColor = "white";}
+                        tile.style.backgroundColor = "white";
+                        allEqual = false;
+                    } else {
+                     //   console.log(boardConfig[i][j] + " " + defaultBoard[i][j]);
+                     if (tile.id != ((dimensions - 1).toString() + "-" + (dimensions - 1).toString())) {tile.style.backgroundColor = "green";}
+                    }
+                }
+            }
+            if (allEqual) {displayWin();}
+ 
+        }
 
 
+
+        function generateDefaultBoard(dimensions, dimensions) {
+            let newBoard = [];
+            for (let i = 0; i < dimensions; i++) {
+                let row = [];
+                for (let j = 1; j <= dimensions; j++) {
+                    let num = j + i*dimensions;
+                    if (num != dimensions*dimensions) {
+                        row.push(num);
+                    } else {row.push(0);}
+                }
+                newBoard.push(row);
+            }
+            return newBoard;
+        }
 
         function shuffle(arr) {
-            let turns = Math.floor(Math.random()*(100-60)+60);
-            let emptyX = 3;
-            let emptyY = 3;
+            let turns = Math.floor(Math.pow((3*dimensions),2));
+            let emptyX = dimensions - 1;
+            let emptyY = dimensions - 1;
 
-            for (let i = 0; i < turns*2; i++) {
+            for (let i = 0; i < turns; i++) {
                 let leftX = emptyX - 1;
                 let rightX = emptyX + 1;
                 let topY = emptyY - 1;
@@ -243,7 +354,7 @@
                         }
                     break;
                     case 1:
-                        if (rightX <= 3) {
+                        if (rightX <= dimensions - 1) {
                             arr[emptyX][emptyY] = arr[rightX][emptyY];
                             arr[rightX][emptyY] = 0;
                             emptyX = rightX;
@@ -257,7 +368,7 @@
                         }
                     break;
                     case 3:
-                        if (bottomY <= 3) {
+                        if (bottomY <= dimensions - 1) {
                             arr[emptyX][emptyY] = arr[emptyX][bottomY];
                             arr[emptyX][bottomY] = 0;
                             emptyY = bottomY;
@@ -265,7 +376,7 @@
                     break;
                 }
             }
-            console.log(boardConfig);
+            //console.log(boardConfig);
         }
 
         function removeAllClasses(movedTile) {
@@ -273,6 +384,49 @@
             movedTile.classList.remove("slideRight");
             movedTile.classList.remove("slideUp");
             movedTile.classList.remove("slideDown");
+        }
+
+        function updateDimension() {
+            let val = document.getElementById("chooseN").value;
+            dimensions = val;
+            document.getElementById("showDimensions").textContent = `Choose ${val}x${val} board to play on.`;
+            boardConfig = generateDefaultBoard(dimensions,dimensions); 
+            defaultBoard = generateDefaultBoard(dimensions,dimensions); 
+        }
+        
+        function startGame() {
+            loadGame();
+            prompt.style.display = "none";
+            board.style.visibility = "visible";
+            moveCountElement.style.display = "block";
+        }
+
+        function displayWin() {
+            gameEnded = true;
+            tooltip.style.display = "block";
+            container.style.visibility = "visible";
+        }
+
+        function backToHome() {
+            board.style.visibility = "hidden";
+            prompt.style.display = "block";
+            moveCountElement.style.display = "none";
+            container.style.visibility = "hidden";
+            tooltip.style.display = "none";
+            
+            moves = 0;
+            moveCountElement.textContent = "Moves: " + moves;
+            while(board.hasChildNodes()) {board.removeChild(board.firstChild);}
+        }
+
+        function resetGame() {
+            container.style.visibility = "hidden";
+            tooltip.style.display = "none";
+
+            moves = 0;
+            moveCountElement.textContent = "Moves: " + moves;
+            while(board.hasChildNodes()) {board.removeChild(board.firstChild);}
+            loadGame();
         }
     </script>
 </body>
