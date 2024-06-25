@@ -255,9 +255,7 @@
         }
 
         function userClick() {
-            if (!firstMoveMade) {startStopwatch(); firstMoveMade = true;}
             if (gameEnded) {return;}
-            moves++;
             let emptyX = parseInt(emptyCoord[0]);
             let emptyY = parseInt(emptyCoord[2]);
             let clickX = parseInt(this.id[0]);
@@ -267,6 +265,7 @@
             let clickTile = document.getElementById(clickX.toString()+"-"+clickY.toString());
 
             if (clickX == emptyX - 1 && clickY == emptyY) {
+                if (moves == 0) {startStopwatch();}
                 boardConfig[emptyY][emptyX] = boardConfig[emptyY][clickX];
                 boardConfig[emptyY][clickX] = 0;
 
@@ -277,6 +276,7 @@
                 emptyTile.classList.add("slideRight");
             } else
             if (clickX == emptyX + 1 && clickY == emptyY) {
+                if (moves == 0) {startStopwatch();}
                 boardConfig[emptyY][emptyX] = boardConfig[emptyY][clickX];
                 boardConfig[emptyY][clickX] = 0;
 
@@ -287,6 +287,7 @@
                 emptyTile.classList.add("slideLeft");
             } else
             if (clickX == emptyX && clickY == emptyY - 1) {
+                if (moves == 0) {startStopwatch();}
                 boardConfig[emptyY][emptyX] = boardConfig[clickY][emptyX];
                 boardConfig[clickY][emptyX] = 0;
 
@@ -297,6 +298,7 @@
                 emptyTile.classList.add("slideDown");
             } else
             if (clickX == emptyX && clickY == emptyY + 1) {
+                if (moves == 0) {startStopwatch();}
                 boardConfig[emptyY][emptyX] = boardConfig[clickY][emptyX];
                 boardConfig[clickY][emptyX] = 0;
 
@@ -306,6 +308,7 @@
                 removeAllClasses(clickTile);
                 emptyTile.classList.add("slideUp");
             }
+            moves++;
             document.getElementById("moveCount").textContent = "Moves: " + moves;
             checkWin(boardConfig);
         }
