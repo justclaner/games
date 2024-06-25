@@ -19,8 +19,8 @@
             --trans:148px;
         }
         #board {
-            width: 480px;
-            height: 480px;
+            width: 360px;
+            height: 360px;
             border: 1px solid black;
         }
         #board div {
@@ -91,8 +91,8 @@
     <div id="board" class="center" style="visibility: hidden;"></div>
     <br>
     <div id="statistics" style="display: none; margin:10px auto;">
-        <span id="moveCount" style="display: inline-block; font-size: 36px; margin:0px; margin-right:10px;">Moves: 0</span>
-        <span id="stopwatch" style="display: inline-block; font-size: 36px; margin:0px; margin-left:10px;">Time: 0s</span>
+        <span id="moveCount" style="display: inline-block; font-size: 24px; margin:0px; margin-right:10px;">Moves: 0</span>
+        <span id="stopwatch" style="display: inline-block; font-size: 24px; margin:0px; margin-left:10px;">Time: 0s</span>
     </div>
    
     <div style="width:100%;text-align: center; visibility: hidden;" id="container">
@@ -114,7 +114,7 @@
         var animationLength = seconds*1000;
         var gameEnded;
         var moves;
-        var boardLength = 480;
+        var boardLength = 360;
         var greenCount = 0;
         var stopwatch;
 
