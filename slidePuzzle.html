@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="general.css">
     <style>
         body {
+            background-color: gray;
             -moz-user-select: none;
             -webkit-user-drag: none;
             -webkit-user-select: none;
@@ -18,8 +19,8 @@
             --trans:148px;
         }
         #board {
-            width: 600px;
-            height: 600px;
+            width: 480px;
+            height: 480px;
             border: 1px solid black;
         }
         #board div {
@@ -79,18 +80,21 @@
 </head>
 <body>
     <h1>Slide Puzzle</h1>
+
     <div class="prompt" id="prompt">
-        <p id="showDimensions">Choose 4x4 board to play on.</p>
+        <p id="showDimensions" style="font-size: large;">Choose 4x4 board to play on.</p>
         <label for="chooseN">NxN:</label>
         <input type="range" id="chooseN" min="3" max="10" value="4" style="margin: 3px;" oninput="updateDimension()"></p>
         <button onclick="startGame()">Play Game</button>
     </div>
-    <!-- <p id="showDimensions">Choose 4x4 board to play on.</p>
-    <label for="chooseN">NxN:</label>
-    <input type="range" id="chooseN" min="3" max="10" value="4" style="margin: 3px;" oninput="updateDimensionDisplay()"></p> -->
+
     <div id="board" class="center" style="visibility: hidden;"></div>
     <br>
-    <p id="moveCount" style="display: none; font-size: 48px; margin:0;">Moves: 0</p>
+    <div id="statistics" style="display: none; margin:10px auto;">
+        <span id="moveCount" style="display: inline-block; font-size: 36px; margin:0px; margin-right:10px;">Moves: 0</span>
+        <span id="stopwatch" style="display: inline-block; font-size: 36px; margin:0px; margin-left:10px;">Time: 0s</span>
+    </div>
+   
     <div style="width:100%;text-align: center; visibility: hidden;" id="container">
         <button id="reset" style="display: inline-block;" onclick="resetGame()">Play Again</button>
         <button id="changeDimension" style="display: inline-block;" onclick="backToHome()">Change NxN Dimensions of Board</button>
@@ -110,14 +114,18 @@
         var animationLength = seconds*1000;
         var gameEnded;
         var moves;
-        var boardLength = 600;
-
+        var boardLength = 480;
+        var greenCount = 0;
+        var stopwatch;
 
         var board = document.getElementById("board");
         var prompt = document.getElementById("prompt");
         var moveCountElement = document.getElementById("moveCount");
         var container = document.getElementById("container");
         var tooltip = document.getElementById("tooltip");
+        var statistics = document.getElementById("statistics");
+     
+        var time = 0;
 
         // window.onload = function() {
         //    loadGame();
@@ -186,6 +194,7 @@
             if (emptyY + 1 <= dimensions - 1) {bottomTile = document.getElementById(emptyX.toString() + "-" + (emptyY + 1).toString());}
 
             if (input == "ArrowLeft" && rightTile != 0) {
+                if (moves == 0) {startStopwatch();}
                 moves++;
                 removeAllClasses(rightTile);
                 boardConfig[emptyY][emptyX] = parseInt(rightTile.firstChild.innerHTML);
@@ -198,6 +207,7 @@
                 emptyTile.classList.add("slideLeft");
                // setTimeout(()=>{emptyTile.classList.remove("slideLeft");},animationLength);
             } else if (input == "ArrowRight" && leftTile != 0) {
+                if (moves == 0) {startStopwatch();}
                 moves++;
                 removeAllClasses(leftTile);
                 boardConfig[emptyY][emptyX] = parseInt(leftTile.firstChild.innerHTML);
@@ -210,6 +220,7 @@
                 emptyTile.classList.add("slideRight");
                 //setTimeout(()=>{emptyTile.classList.remove("slideRight");},animationLength);
             } else if (input == "ArrowUp" && bottomTile != 0) {
+                if (moves == 0) {startStopwatch();}
                 moves++;
                 removeAllClasses(bottomTile);
                 boardConfig[emptyY][emptyX] = parseInt(bottomTile.firstChild.innerHTML);
@@ -222,6 +233,7 @@
                 emptyTile.classList.add("slideUp");
                 //setTimeout(()=>{emptyTile.classList.remove("slideUp");},animationLength);
             } else if (input == "ArrowDown" && topTile != 0) {
+                if (moves == 0) {startStopwatch();}
                 moves++;
                 removeAllClasses(topTile);
                 boardConfig[emptyY][emptyX] = parseInt(topTile.firstChild.innerHTML);
@@ -243,6 +255,7 @@
         }
 
         function userClick() {
+            if (!firstMoveMade) {startStopwatch(); firstMoveMade = true;}
             if (gameEnded) {return;}
             moves++;
             let emptyX = parseInt(emptyCoord[0]);
@@ -299,21 +312,25 @@
        // console.log(boardConfig);
        
         function checkWin(arr) {
+            greenCount = 0;
             let allEqual = true;
             for (let i = 0; i < dimensions; i++) {
                 for (let j = 0; j < dimensions; j++) {
                     let tile = document.getElementById(j.toString() + "-" + i.toString());
                     if (boardConfig[i][j] != defaultBoard[i][j]) {
-                        if (tile.id != ((dimensions - 1).toString() + "-" + (dimensions - 1).toString())) {tile.style.backgroundColor = "white";}
-                        tile.style.backgroundColor = "white";
+                        if (tile.id != ((dimensions - 1).toString() + "-" + (dimensions - 1).toString())) {tile.style.backgroundColor = "gray";}
+                        tile.style.backgroundColor = "gray";
                         allEqual = false;
                     } else {
                      //   console.log(boardConfig[i][j] + " " + defaultBoard[i][j]);
-                     if (tile.id != ((dimensions - 1).toString() + "-" + (dimensions - 1).toString())) {tile.style.backgroundColor = "green";}
+                     if (tile.id != ((dimensions - 1).toString() + "-" + (dimensions - 1).toString())) {tile.style.backgroundColor = "green"; greenCount++;}
                     }
                 }
             }
-            if (allEqual) {displayWin();}
+            if (allEqual) {
+                clearInterval(stopwatch);
+                displayWin();
+            }
  
         }
 
@@ -378,7 +395,13 @@
             }
             //console.log(boardConfig);
         }
-
+        function startStopwatch() {
+            time = 0;
+                 stopwatch = setInterval(()=>{
+                time += 0.01;
+                document.getElementById("stopwatch").textContent = "Time: " + time.toFixed(2) + "s";
+            },10);
+        }
         function removeAllClasses(movedTile) {
             movedTile.classList.remove("slideLeft");
             movedTile.classList.remove("slideRight");
@@ -398,7 +421,7 @@
             loadGame();
             prompt.style.display = "none";
             board.style.visibility = "visible";
-            moveCountElement.style.display = "block";
+            statistics.style.display = "block";
         }
 
         function displayWin() {
@@ -410,12 +433,14 @@
         function backToHome() {
             board.style.visibility = "hidden";
             prompt.style.display = "block";
-            moveCountElement.style.display = "none";
+            statistics.style.display = "none";
             container.style.visibility = "hidden";
             tooltip.style.display = "none";
             
             moves = 0;
+            time = 0;
             moveCountElement.textContent = "Moves: " + moves;
+            document.getElementById("stopwatch").textContent = "Time: " + time.toFixed(2) + "s";
             while(board.hasChildNodes()) {board.removeChild(board.firstChild);}
         }
 
@@ -424,7 +449,9 @@
             tooltip.style.display = "none";
 
             moves = 0;
+            time = 0;
             moveCountElement.textContent = "Moves: " + moves;
+            document.getElementById("stopwatch").textContent = "Time: " + time.toFixed(2) + "s";
             while(board.hasChildNodes()) {board.removeChild(board.firstChild);}
             loadGame();
         }
