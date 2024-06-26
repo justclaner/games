@@ -302,7 +302,6 @@
           
                 if (letter.toLowerCase() == randomWord[i-1]) {
                     checked.push(i);
-                    green.push(letter);
                     node.style.backgroundColor = "green";
                     document.getElementById(letter).style.backgroundColor = "green";
                     yellowIndicator.set(letter.toLowerCase(),yellowIndicator.get(letter.toLowerCase())-1);
