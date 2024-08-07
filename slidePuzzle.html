@@ -17,17 +17,20 @@
             --length:0.05s;
             --timing:ease-out;
             --trans:148px;
+            --blurDensity:10px;
         }
         #board {
             width: 360px;
             height: 360px;
             border: 1px solid black;
         }
+
         #board div {
             margin: 0px;
             border: 1px solid black;
             display :flex;
         }
+
         
         .prompt {
             margin: 0 auto;
@@ -55,20 +58,44 @@
         }
 
         @keyframes slideLeft {
-            from {transform:translateX(var(--trans));}
-            to {transform:translateX(0px);}
+            from {
+                transform:translateX(var(--trans));
+                filter:blur(var(--blurDensity));
+            }
+            to {
+                transform:translateX(0px);
+                filter:blur(0px);
+            }
         }
         @keyframes slideRight {
-            from {transform:translateX(calc(-1*var(--trans)));}
-            to {transform:translateX(0px);}
+            from {
+                transform:translateX(calc(-1*var(--trans)));
+                 filter:blur(var(--blurDensity));
+                }
+            to {
+                transform:translateX(0px);
+                filter:blur(0px);
+            }
         }
         @keyframes slideUp {
-            from {transform:translateY(var(--trans));}
-            to {transform:translateY(0px);}
+            from {
+                transform:translateY(var(--trans));
+                 filter:blur(var(--blurDensity));
+                }
+            to {
+                transform:translateY(0px);
+                filter:blur(0px);
+            }
         }
         @keyframes slideDown {
-            from {transform:translateY(calc(-1*var(--trans)));}
-            to {transform:translateY(0px);}
+            from {
+                transform:translateY(calc(-1*var(--trans)));
+                 filter:blur(var(--blurDensity));
+                }
+            to {
+                transform:translateY(0px);
+                filter:blur(0px);
+            }
         }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -106,7 +133,7 @@
         //code a resetGame
         //add animations to onscreen clicks
         var dimensions = 4;
-        var seconds = 0.05;
+        var seconds = 0.1;
         var numbers = [];
         var defaultBoard;
         var boardConfig = generateDefaultBoard(dimensions,dimensions); 
@@ -140,6 +167,7 @@
             let tileLength = (boardLength/dimensions)-2;
             let root = document.querySelector(':root');
             root.style.setProperty('--trans',`${tileLength}px`)
+            root.style.setProperty('--length',`${seconds}s`)
             for (let i = 0; i < 16; i++) {
                 numbers.push(i);
             }

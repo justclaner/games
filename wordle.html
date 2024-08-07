@@ -223,7 +223,7 @@
         unique = new Map();
       randomWord = wordBank[Math.floor(Math.random()*wordBank.length)];
        //randomWord = "iliac";
-      //  console.log(randomWord);
+        console.log(randomWord);
         for (let i = 0; i < 5; i++) {
             let char = randomWord[i];
             if (!unique.has(char)) {unique.set(char,1);}
@@ -389,6 +389,15 @@
             resetButton.style.display = "none";
             document.getElementById("restart").play();
             while (board.hasChildNodes()) {board.removeChild(board.firstChild);}
+            for (let i = 0; i < topChars.length; i++) {
+                document.getElementById(topChars[i]).style.backgroundColor = "rgb(220,220,220)";
+            }
+            for (let i = 0; i < middleChars.length; i++) {
+                document.getElementById(middleChars[i]).style.backgroundColor = "rgb(220,220,220)";
+            }
+            for (let i = 0; i < bottomChars.length; i++) {
+                document.getElementById(bottomChars[i]).style.backgroundColor = "rgb(220,220,220)";
+            }
             createGame();
         }
     </script>
